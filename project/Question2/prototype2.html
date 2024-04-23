@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="prototype2.css">
+    <title>UK House price in Economic time recessions</title>
+    <script src="https://d3js.org/d3.v4.js"></script>
+</head>
+<body>
+<h1>Graph with areas that represents periods of economic recessions.</h1>
+<div id="my_dataviz"></div>
+
+
+<script>
+    // set the dimensions and margins of the graph
+    var margin = {top: 10, right: 30, bottom: 30, left: 60},
+        width = 700 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
+
+    // append the svg object to the body of the page
+    var svg = d3.select("#my_dataviz")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+    //Read the data
+    d3.csv("average_price_monthly.csv",
+
+        // When reading the csv, I must format variables:
+        function(d){
+            return { date : d3.timeParse("%Y-%m")(d.date), price : d.price }
+        },
+
+        // Now I can use this dataset:
+        function(data) {
+
+        const xScale = d3.scaleTime()
+                .domain(d3.extent(data, d => d.date))
+                .range([50, 550]);
+
+            const yScale = d3.scaleLinear()
+                .domain(d3.extent(data, d => d.price))
+                .range([350, 50]);
+
+            // Add X axis --> it is a date format
+
+
+
+            var x = d3.scaleTime()
+                .domain(d3.extent(data, d => d.date))
+                .range([ 0, width ]);
+            xAxis = svg.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x));
+
+            // Add Y axis
+            var y = d3.scaleLinear()
+                .domain([40000, 350000])
+                .range([ height, 0 ]);
+            yAxis = svg.append("g")
+                .call(d3.axisLeft(y));
+
+
+
+
+            // Add a clipPath: everything out of this area won't be drawn.
+            var clip = svg.append("defs").append("svg:clipPath")
+                .attr("id", "clip")
+                .append("svg:rect")
+                .attr("width", width )
+                .attr("height", height )
+                .attr("x", 0)
+                .attr("y", 0);
+
+            // Add brushing
+            var brush = d3.brushX()                   // Add the brush feature using the d3.brush function
+                .extent( [ [0,0], [width,height] ] )  // initialise the brush area: start at 0,0 and finishes at width,height: it means I select the whole graph area
+                .on("end", updateChart)               // Each time the brush selection changes, trigger the 'updateChart' function
+
+            // Create the area variable: where both the area and the brush take place
+            var area = svg.append('g')
+                .attr("clip-path", "url(#clip)")
+
+            // Create an area generator
+            var areaGenerator = d3.area()
+                .x(function(d) { return x(d.date) })
+                .y0(y(0))
+                .y1(function(d) { return y(d.price) })
+
+
+
+
+            // Add the area
+            area.append("path")
+                .datum(data)
+                .attr("class", "myArea")  // I add the class myArea to be able to modify it later on.
+                .attr("fill", "#69b3a2")
+                .attr("fill-opacity", .3)
+                .attr("stroke", "black")
+                .attr("stroke-width", 1)
+                .attr("d", areaGenerator )
+
+            // Add the brushing
+            area
+                .append("g")
+                .attr("class", "brush")
+                .call(brush);
+
+            const start = new Date(2007, 12); // January 1, 2008
+            const end = new Date(2009, 6); // January 1, 2009
+            const maxValue = d3.max(data, d => d.price);
+
+            const rect = svg.append("rect")
+                .attr("id", "recessionRect")
+                .attr("x", xScale(start))
+                .attr("y", yScale(maxValue))
+                .attr("width", xScale(end) - xScale(start))
+                .attr("height", 310)
+                .attr("fill", "rgba(255, 0, 0, 0.2)")
+                .on("click", updateChartToRectRange);
+
+
+            const start2 = new Date(1990, 7); // January 1, 2008
+            const end2 = new Date(1991, 3); // January 1, 2009
+            const maxValue2 = d3.max(data, d => d.price);
+
+            const rect2 = svg.append("rect")
+                .attr("id", "recessionRect2")
+                .attr("x", xScale(start2))
+                .attr("y", yScale(maxValue2))
+                .attr("width", xScale(end2) - xScale(start2))
+                .attr("height", 310)
+                .attr("fill", "rgba(255, 0, 0, 0.2)")
+                .on("click", updateChartToRectRange);
+
+            const start3 = new Date(2000, 7); // January 1, 2008
+            const end3 = new Date(2001, 3); // January 1, 2009
+            const maxValue3 = d3.max(data, d => d.price);
+
+            const rect3 = svg.append("rect")
+                .attr("id", "recessionRect3")
+                .attr("x", xScale(start3))
+                .attr("y", yScale(maxValue3))
+                .attr("width", xScale(end3) - xScale(start3))
+                .attr("height", 310)
+                .attr("fill", "rgba(255, 0, 0, 0.2)")
+                .on("click", updateChartToRectRange);
+
+
+            const start4 = new Date(2022, 8); // January 1, 2008
+            const end4 = new Date(2023, 6); // January 1, 2009
+            const maxValue4 = d3.max(data, d => d.price);
+
+            const rect4 = svg.append("rect")
+                .attr("id", "recessionRect4")
+                .attr("x", xScale(start4))
+                .attr("y", yScale(maxValue4))
+                .attr("width", xScale(end4) - xScale(start4))
+                .attr("height", 310)
+                .attr("fill", "rgba(255, 0, 0, 0.2)")
+                .on("click", updateChartToRectRange);
+
+
+            // Add the brushing
+            area
+                .append("g")
+                .attr("class", "brush")
+                .call(brush);
+
+            var idleTimeout
+            function idled() { idleTimeout = null; }
+
+            // A function that update the chart for given boundaries
+            function updateChart() {
+                // What are the selected boundaries?
+                extent = d3.event.selection
+
+                // If no selection, back to initial coordinate. Otherwise, update X axis domain
+                if (!extent) {
+                    if (!idleTimeout) return idleTimeout = setTimeout(idled, 350); // This allows to wait a little bit
+                    x.domain([4, 8]);
+                } else {
+                    x.domain([x.invert(extent[0]), x.invert(extent[1])]);
+                    area.select(".brush").call(brush.move, null); // This remove the grey brush area as soon as the selection has been done
+
+                    // Remove the rectangle element
+                    d3.select("#recessionRect").remove();
+                    d3.select("#recessionRect2").remove();
+                    d3.select("#recessionRect3").remove();
+                    d3.select("#recessionRect4").remove();
+                }
+
+                // Update axis and area position
+                xAxis.transition().duration(1000).call(d3.axisBottom(x));
+                area
+                    .select('.myArea')
+                    .transition()
+                    .duration(1000)
+                    .attr("d", areaGenerator);
+            }
+
+            function updateChartToRectRange() {
+                const rectStart = x.invert(d3.select(this).attr("x"));
+                const rectEnd = x.invert(parseFloat(d3.select(this).attr("x")) + parseFloat(d3.select(this).attr("width")));
+                x.domain([rectStart, rectEnd]);
+                xAxis.transition().call(d3.axisBottom(x));
+                svg.select("#recessionRect").remove();
+                svg.select("#recessionRect2").remove();
+                d3.select("#recessionRect3").remove();
+                d3.select("#recessionRect4").remove();
+                area
+                    .select('.myArea')
+                    .transition()
+                    .attr("d", areaGenerator);
+            }
+
+            // If user double click, reinitialize the chart and re-append the rectangle
+            svg.on("dblclick", function() {
+                x.domain(d3.extent(data, function(d) { return d.date; }));
+                xAxis.transition().call(d3.axisBottom(x));
+                area
+                    .select('.myArea')
+                    .transition()
+                    .attr("d", areaGenerator);
+
+                // Re-append the rectangle
+
+                d3.select("#recessionRect").remove();
+                d3.select("#recessionRect2").remove();
+                d3.select("#recessionRect3").remove();
+                d3.select("#recessionRect4").remove();
+
+                svg.append("rect")
+                    .attr("id", "recessionRect")
+                    .attr("x", xScale(start))
+                    .attr("y", yScale(maxValue))
+                    .attr("width", xScale(end) - xScale(start))
+                    .attr("height", 310)
+                    .attr("fill", "rgba(255, 0, 0, 0.2)")
+                    .on("click", updateChartToRectRange);
+
+                svg.append("rect")
+                    .attr("id", "recessionRect2")
+                    .attr("x", xScale(start2))
+                    .attr("y", yScale(maxValue2))
+                    .attr("width", xScale(end2) - xScale(start2))
+                    .attr("height", 310)
+                    .attr("fill", "rgba(255, 0, 0, 0.2)")
+                    .on("click", updateChartToRectRange);
+
+                svg.append("rect")
+                    .attr("id", "recessionRect3")
+                    .attr("x", xScale(start3))
+                    .attr("y", yScale(maxValue3))
+                    .attr("width", xScale(end3) - xScale(start3))
+                    .attr("height", 310)
+                    .attr("fill", "rgba(255, 0, 0, 0.2)")
+                    .on("click", updateChartToRectRange);
+
+                svg.append("rect")
+                    .attr("id", "recessionRect4")
+                    .attr("x", xScale(start4))
+                    .attr("y", yScale(maxValue4))
+                    .attr("width", xScale(end4) - xScale(start4))
+                    .attr("height", 310)
+                    .attr("fill", "rgba(255, 0, 0, 0.2)")
+                    .on("click", updateChartToRectRange);
+
+            });
+
+
+            var tooltip = d3.select("area")
+                .append("div")
+                .style("position", "absolute")
+                .style("z-index", "10")
+                .style("visibility", "hidden")
+                .style("background", "#000")
+                .text("a simple tooltip");
+        }
+
+
+
+
+    );
+
+</script>
+</body>
+</html>

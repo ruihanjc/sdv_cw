@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="prototype.css">
+    <title>UK House price in comparison to Price earning ratio over time</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+</head>
+<body>
+<h1>UK House price in comparison to Price earning ratio over time</h1>
+<div id="chart"></div>
+
+<script>
+    d3.csv("peprice.csv").then(function(data) {
+        console.log(data);
+    });
+</script>
+<script>
+
+    d3.csv("peprice.csv").then(function(data) {
+        // Extract the necessary data
+        const years = data.map(d => d.years);
+        const prices = data.map(d => d.prices);
+        const pe1 = data.map(d => d.pe1);
+        const pe2 = data.map(d => d.pe2);
+        const pe3 = data.map(d => d.pe3);
+        const pe4 = data.map(d => d.pe4);
+        const pe5 = data.map(d => d.pe5);
+        const pe6 = data.map(d => d.pe6);
+        const pe7 = data.map(d => d.pe7);
+
+        // Set up the dimensions and scales
+        const width = 1000;
+        const height = 600;
+        const margin = { top: 20, right: 20, bottom: 50, left: 70 };
+
+        const x = d3.scaleLinear()
+            .domain(d3.extent(years))
+            .range([margin.left, width - margin.right]);
+
+        const y = d3.scaleLinear()
+            .domain([70000, 360000])
+            .range([height - margin.bottom, margin.top]);
+
+        // Create the line generator
+        const line = d3.line()
+            .x((d, i) => x(years[i]))
+            .y(d => y(d));
+
+        const area = d3.area()
+            .x((d, i) => x(years[i]))
+            .y0((d, i) => y(pe1[i]))
+            .y1((d, i) => y(pe2[i]));
+
+        const area2 = d3.area()
+            .x((d, i) => x(years[i]))
+            .y0((d, i) => y(pe2[i]))
+            .y1((d, i) => y(pe3[i]));
+
+
+        const area3 = d3.area()
+            .x((d, i) => x(years[i]))
+            .y0((d, i) => y(pe3[i]))
+            .y1((d, i) => y(pe4[i]));
+
+        const area4 = d3.area()
+            .x((d, i) => x(years[i]))
+            .y0((d, i) => y(pe4[i]))
+            .y1((d, i) => y(pe5[i]));
+
+        const area5 = d3.area()
+            .x((d, i) => x(years[i]))
+            .y0((d, i) => y(pe5[i]))
+            .y1((d, i) => y(pe6[i]));
+
+        const area6 = d3.area()
+            .x((d, i) => x(years[i]))
+            .y0((d, i) => y(pe6[i]))
+            .y1((d, i) => y(pe7[i]));
+
+
+        // Create the SVG container
+        const svg = d3.select("body")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        // Add the lines
+
+
+        svg.append("path")
+            .datum(pe1)
+            .attr("class", "line")
+            .attr("stroke", "#d9d2e9")
+            .attr("d", line);
+
+        svg.append("path")
+            .datum(pe2)
+            .attr("class", "line")
+            .attr("stroke", "#cfe2f3")
+            .attr("d", line);
+
+
+        svg.append("path")
+            .datum(pe1)
+            .attr("fill", "#d9d2e9")
+            .attr("stroke", "none")
+            .attr("d", area);
+
+        svg.append("path")
+            .datum(pe1)
+            .attr("fill", "#cfe2f3")
+            .attr("stroke", "none")
+            .attr("d", area2);
+
+
+        svg.append("path")
+            .datum(pe3)
+            .attr("class", "line")
+            .attr("stroke", "#d0e0e3")
+            .attr("d", line);
+
+        svg.append("path")
+            .datum(pe4)
+            .attr("class", "line")
+            .attr("stroke", "#d9ead3")
+            .attr("d", line);
+
+        svg.append("path")
+            .datum(pe1)
+            .attr("fill", "#d0e0e3")
+            .attr("stroke", "none")
+            .attr("d", area3);
+
+        svg.append("path")
+            .datum(pe1)
+            .attr("fill", "#d9ead3")
+            .attr("stroke", "none")
+            .attr("d", area4);
+
+
+        svg.append("path")
+            .datum(pe5)
+            .attr("class", "line")
+            .attr("stroke", "#fff2cc")
+            .attr("d", line);
+
+        svg.append("path")
+            .datum(pe6)
+            .attr("class", "line")
+            .attr("stroke", "#fce5cd")
+            .attr("d", line);
+
+        svg.append("path")
+            .datum(pe7)
+            .attr("class", "line")
+            .attr("stroke", "#fce5cd")
+            .attr("d", line);
+
+        svg.append("path")
+            .datum(pe1)
+            .attr("fill", "#fff2cc")
+            .attr("stroke", "none")
+            .attr("d", area5);
+
+        svg.append("path")
+            .datum(pe1)
+            .attr("fill", "#fce5cd")
+            .attr("stroke", "none")
+            .attr("d", area6);
+
+        svg.append("path")
+            .datum(prices)
+            .attr("class", "line")
+            .attr("stroke", "#404080")
+            .attr("d", line);
+
+        // Add the X and Y axes
+        svg.append("g")
+            .attr("transform", `translate(0,${height - margin.bottom})`)
+            .call(d3.axisBottom(x));
+
+        svg.append("g")
+            .attr("transform", `translate(${margin.left},0)`)
+            .call(d3.axisLeft(y));
+
+
+        svg.append("circle").attr("cx",200).attr("cy",100).attr("r", 6).style("fill", "#d9d2e9")
+        svg.append("circle").attr("cx",200).attr("cy",115).attr("r", 6).style("fill", "#cfe2f3")
+        svg.append("circle").attr("cx",200).attr("cy",130).attr("r", 6).style("fill", "#d0e0e3")
+        svg.append("circle").attr("cx",200).attr("cy",145).attr("r", 6).style("fill", "#d9ead3")
+        svg.append("circle").attr("cx",200).attr("cy",160).attr("r", 6).style("fill", "#fff2cc")
+        svg.append("circle").attr("cx",200).attr("cy",175).attr("r", 6).style("fill", "#fce5cd")
+        svg.append("circle").attr("cx",200).attr("cy",190).attr("r", 6).style("fill", "#404080")
+
+        svg.append("text").attr("x", 220).attr("y", 100).text("PE 3.3-3.6").style("font-size", "15px").attr("alignment-baseline","middle")
+        svg.append("text").attr("x", 220).attr("y", 115).text("PE 3.6-4.0").style("font-size", "15px").attr("alignment-baseline","middle")
+        svg.append("text").attr("x", 220).attr("y", 130).text("PE 4.0-4.4").style("font-size", "15px").attr("alignment-baseline","middle")
+        svg.append("text").attr("x", 220).attr("y", 145).text("PE 4.4-5.6").style("font-size", "15px").attr("alignment-baseline","middle")
+        svg.append("text").attr("x", 220).attr("y", 160).text("PE 5.6-6.3").style("font-size", "15px").attr("alignment-baseline","middle")
+        svg.append("text").attr("x", 220).attr("y", 175).text("PE 6.3-6.9").style("font-size", "15px").attr("alignment-baseline","middle")
+        svg.append("text").attr("x", 220).attr("y", 190).text("UK House Price").style("font-size", "15px").attr("alignment-baseline","middle")
+
+
+        svg.on("mouseover", mouseover)
+            .on("mousemove", mousemove)
+            .on("mouseout", mouseout);
+
+// Create a vertical line for the cursor
+        const cursor = svg.append("line")
+            .attr("y1", margin.top)
+            .attr("y2", height - margin.bottom)
+            .attr("stroke", "black")
+            .attr("stroke-width", 1)
+            .style("opacity", 0);
+
+// Create a text element for displaying the value
+        const valueText = svg.append("text")
+            .attr("text-anchor", "top")
+            .attr("alignment-baseline", "hanging")
+            .style("opacity", 0);
+
+        function mouseover() {
+            cursor.style("opacity", 1);
+            valueText.style("opacity", 1);
+        }
+
+        function mousemove(event) {
+            const bisect = d3.bisector(d => d).left;
+            const mouseX = d3.pointer(event, this)[0];
+            const x0 = x.invert(mouseX);
+            const i = bisect(years, x0, 1);
+            const d0 = data[i - 1];
+            const d1 = data[i];
+            let d;
+
+            if (d0 && d1) {
+                d = x0 - d0.years > d1.years - x0 ? d1 : d0;
+            } else {
+                d = d0 || d1;
+            }
+
+            const year = d.years;
+            const price = d.prices;
+
+            cursor.attr("x1", x(year))
+                .attr("x2", x(year));
+
+            valueText.attr("x", x(year))
+                .attr("y", y(price) + 50)
+                .text(`Price: ${price.toLocaleString()}`)
+                .style("fill", "#404080");
+        }
+
+        function mouseout() {
+            cursor.style("opacity", 0);
+            valueText.style("opacity", 0);
+        }
+
+    });
+</script>
+</body>
+</html>

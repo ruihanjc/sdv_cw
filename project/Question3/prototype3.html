@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Animated Bar Chart</title>
+    <script src="https://d3js.org/d3.v6.js"></script>
+    <style>
+        .bar {
+            fill: steelblue;
+            cursor: pointer;
+        }
+
+        .bar-label {
+            font-family: sans-serif;
+            font-size: 12px;
+            text-anchor: middle;
+        }
+
+        .axis-label {
+            font-family: sans-serif;
+            font-size: 14px;
+        }
+
+        .slice {
+            stroke: white;
+            stroke-width: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .label {
+            font-family: sans-serif;
+            font-size: 12px;
+            text-anchor: middle;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Bar Chart and Pie Chart</h1>
+<div id="my_dataviz"></div>
+<script>
+
+
+    const width = 1200;
+    const height = 500;
+    const marginTop = 20;
+    const marginRight = 20;
+    const marginBottom = 50;
+    const marginLeft = 80;
+
+    const svg = d3.select('body')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+    const chartWidth = width - marginLeft - marginRight;
+    const chartHeight = height - marginTop - marginBottom;
+
+    const x = d3.scaleBand()
+        .range([0, chartWidth])
+        .padding(0.1);
+
+    const y = d3.scaleLinear()
+        .range([chartHeight, 0]);
+
+    const g = svg.append('g')
+        .attr('transform', `translate(${marginLeft}, ${marginTop})`);
+
+    d3.csv('price_location.csv')
+        .then(data => {
+            x.domain(data.map(d => d.Name));
+            y.domain([0, d3.max(data, d => d.Value)]);
+
+            const xAxis = g.append('g')
+                .attr('class', 'axis axis-x')
+                .attr('transform', `translate(0, ${chartHeight})`)
+                .call(d3.axisBottom(x))
+                .append('text')
+                .attr('class', 'axis-label')
+                .attr('x', chartWidth / 2)
+                .attr('y', 40)
+                .text('Region');
+
+            const yAxis = g.append('g')
+                .attr('class', 'axis axis-y')
+                .call(d3.axisLeft(y))
+                .append('text')
+                .attr('class', 'axis-label')
+                .attr('transform', 'rotate(-90)')
+                .attr('x', -chartHeight / 2)
+                .attr('y', -60)
+                .text('Value');
+
+            const bars = g.selectAll('.bar')
+                .data(data)
+                .enter()
+                .append('rect')
+                .attr('class', 'bar')
+                .attr('x', d => x(d.Name))
+                .attr('y', d => y(0))
+                .attr('width', x.bandwidth())
+                .attr('height', 0)
+                .transition()
+                .duration(1000)
+                .delay((d, i) => i * 100)
+                .attr('y', d => y(d.Value))
+                .attr('height', d => chartHeight - y(d.Value))
+
+            svg.selectAll("rect").on("click", function(event, d) {
+                createNewGraph([d]);
+            });
+
+            g.selectAll('.bar-label')
+                .data(data)
+                .enter()
+                .append('text')
+                .attr('class', 'bar-label')
+                .attr('x', d => x(d.Name) + x.bandwidth() / 2)
+                .attr('y', d => y(d.Value) - 5)
+                .text(d => d.Value);
+        })
+        .catch(error => console.error(error));
+
+    function createNewGraph(data) {
+        // Remove existing elements
+        svg.selectAll("*").remove();
+
+        const radius = Math.min(chartWidth, chartHeight) / 2;
+        const pie = d3.pie()
+            .value(d => d);
+
+        arr = []
+
+        d3.csv('region_data.csv', function(sData) {
+            arr.push(sData[data[0].Name])
+            houseTypes = ["Detached", "Semi-Detached", "Terraced", "Flat"]
+            check = new Map()
+
+            for(var i = 0; i < 4; i++){
+                check.set(arr[i], houseTypes[i])
+            }
+            
+            const pieData = pie(arr);
+
+            var color = d3.scaleOrdinal()
+                .domain(data)
+                .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b"])
+
+            const arcGenerator = d3.arc()
+                .innerRadius(0)
+                .outerRadius(radius);
+
+            const pieChart = svg.append('g')
+                .attr('transform', `translate(${width / 2}, ${height / 2})`);
+
+            const arcs = pieChart.selectAll('path')
+                .data(pieData)
+                .enter()
+                .append('path')
+                .attr('d', arcGenerator)
+                .attr('fill', (d, i) => d3.schemeCategory10[i % 10])
+                .attr('class', 'slice')
+                .style('opacity', 0)
+                .transition()
+                .duration(500)
+                .delay((d, i) => i * 100)
+                .style('opacity', 1);
+
+
+
+            const labels = pieChart.selectAll('text')
+                .data(pieData)
+                .enter()
+                .append('text')
+                .text(d => `${check.get(d.data)}: £${d.data}`)
+                .attr('transform', d => `translate(${arcGenerator.centroid(d)})`)
+                .style('text-anchor', 'middle')
+                .attr('class', 'label')
+                .transition()
+                .duration(500)
+                .delay((d, i) => i * 100 + 500)
+                .style('opacity', 1);
+        });
+    }
+</script>
+</body>
+</html>
